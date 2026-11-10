@@ -51,13 +51,19 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-Run the fleet manager:
+Launch the fleet manager and two example agents together (acknowledgement-only mode):
 
 ```bash
-ros2 run fleet_manager fleet_manager
+ros2 launch fleet_manager fleet_demo.launch.py
 ```
 
-Run an agent in a robot namespace with Nav2 enabled:
+Enable Nav2 clients only after the Nav2 stacks are already running in both robot namespaces:
+
+```bash
+ros2 launch fleet_manager fleet_demo.launch.py use_nav2:=true
+```
+
+Run a single agent manually in a robot namespace with Nav2 enabled:
 
 ```bash
 ros2 run robot_agent robot_agent --ros-args -r __ns:=/robot_1 -p robot_id:=robot_1 -p use_nav2:=true

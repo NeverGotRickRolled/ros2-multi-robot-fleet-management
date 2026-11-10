@@ -68,6 +68,10 @@ class TaskStore:
         record = self.get(task_id)
         if record is None:
             raise ValueError(f"unknown task_id: {task_id}")
+        if new_state == record.state:
+            if robot_id and record.robot_id and record.robot_id != robot_id:
+                raise ValueError("task is assigned to a different robot")
+            return record
         if new_state not in _ALLOWED[record.state]:
             raise ValueError(
                 f"invalid task transition: {record.state.value} -> {new_state.value}"

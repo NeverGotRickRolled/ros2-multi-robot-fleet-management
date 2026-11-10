@@ -13,7 +13,6 @@ setup(
     install_requires=["setuptools"],
     zip_safe=True,
     maintainer="Manthan Rasal",
-    maintainer_email="maintainer@example.com",
     description="ROS 2 multi-robot fleet registry and task allocation prototype.",
     license="MIT",
     entry_points={"console_scripts": [

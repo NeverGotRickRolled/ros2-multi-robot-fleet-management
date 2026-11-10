@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "fleet_manager/**"
+      - "robot_agent/**"
       - ".github/workflows/python-tests.yml"
   pull_request:
     paths:
@@ -22,5 +23,8 @@ jobs:
       - name: Run fleet allocation tests
         working-directory: fleet_manager
         run: PYTHONPATH=. pytest -q test
+      - name: Run robot agent protocol tests
+        working-directory: robot_agent
+        run: PYTHONPATH=. pytest -q test
       - name: Check Python syntax
-        run: python -m compileall -q fleet_manager
+        run: python -m compileall -q fleet_manager robot_agent

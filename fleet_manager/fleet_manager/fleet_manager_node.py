@@ -67,6 +67,9 @@ class FleetManagerNode(Node):
                 "destination": task.destination,
             })
             self.assignment_pub.publish(assignment)
+            robot.status = RobotStatus.BUSY
+            robot.current_task_id = task.task_id
+            self.registry.update(robot)
             self.get_logger().info(f"Assigned task {task.task_id} to {robot.robot_id}")
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
             self.get_logger().warning(f"Ignoring invalid task request: {exc}")

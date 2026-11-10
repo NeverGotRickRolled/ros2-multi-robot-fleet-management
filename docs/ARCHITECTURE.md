@@ -1,62 +1,48 @@
 # System Architecture
 
-## Logical components
+## Components
 
-1. **Robot registry** stores each robot's latest telemetry and current availability.
-2. **Task store** tracks task IDs, assigned robot IDs, lifecycle states and failure reasons.
-3. **Task allocator** selects an available robot meeting the minimum battery threshold.
-4. **Fleet manager ROS 2 node** accepts requests, reserves robots, publishes assignments, consumes acknowledgements/status, and monitors heartbeat freshness.
-5. **Robot agents** publish telemetry and acknowledge assignment receipt. Navigation execution is not implemented yet.
-6. **Navigation integration** is planned through per-robot Nav2 action clients.
+1. **Robot registry** stores latest robot telemetry.
+2. **Task store** tracks IDs, assignment and lifecycle states.
+3. **Task allocator** selects an available robot above the battery threshold.
+4. **Fleet manager** queues requests, reserves robots, handles acknowledgements/status and monitors heartbeat freshness.
+5. **Robot agent** filters assignments and optionally executes Nav2 `NavigateToPose` goals.
+6. **Nav2 stack** is external per-robot infrastructure; it must be launched and configured separately.
 
-## ROS 2 topic interface (JSON over std_msgs/msg/String)
+## Fleet topics
+
+All fleet messages use JSON in `std_msgs/msg/String` for this MVP.
 
 | Topic | Direction | Purpose |
 |---|---|---|
-| `/fleet/robot_status` | Robot → fleet | Robot telemetry and heartbeat |
-| `/fleet/task_request` | Client → fleet | New task request |
-| `/fleet/task_assignment` | Fleet → robot | Assignment for a specific robot |
-| `/fleet/task_ack` | Robot → fleet | Assignment accepted or rejected |
-| `/fleet/task_status` | Robot → fleet | Accepted, executing, succeeded or failed status |
+| `/fleet/robot_status` | Robot → fleet | Telemetry and heartbeat |
+| `/fleet/task_request` | Client → fleet | Task request |
+| `/fleet/task_assignment` | Fleet → robot | Robot-specific assignment |
+| `/fleet/task_ack` | Robot → fleet | Accepted/rejected acknowledgement |
+| `/fleet/task_status` | Robot → fleet | Lifecycle events |
 
-Example status:
-
-```json
-{"robot_id":"robot_1","status":"available","battery_percent":78.5,"current_task_id":""}
-```
-
-Example task request:
-
-```json
-{"task_id":"move_001","destination":"loading_bay","priority":2}
-```
-
-## Task lifecycle
+## Lifecycle
 
 ```text
 PENDING -> ASSIGNED -> ACCEPTED -> EXECUTING -> SUCCEEDED
                     |             |
                     +-> REJECTED  +-> FAILED
                     |
-                    +-> FAILED (e.g. robot heartbeat timeout)
+                    +-> FAILED (heartbeat timeout)
 ```
 
-- Duplicate task IDs are rejected by the in-memory task store.
-- Pending tasks are considered in descending priority order, then task ID.
-- The manager reserves a robot as busy before publishing the assignment.
-- Acknowledgements and task status are accepted only from the robot assigned to that task.
-- Robots without a fresh heartbeat are marked offline after the configurable timeout (default 5 seconds).
-- A heartbeat timeout fails that robot's active task with reason `heartbeat_timeout`.
-- Terminal task states are `succeeded`, `failed`, and `rejected`.
+The robot agent emits `executing`, `succeeded` and navigation-related `failed` events only when `use_nav2:=true` and a Nav2 action event is received. In acknowledgement-only mode it reports acceptance and remains busy until an external task status event or heartbeat timeout.
 
-## Allocation policy (MVP)
+## Nav2 goal contract
 
-- Only robots with status `available` are eligible.
-- Robots below the configured minimum battery percentage are excluded (default 20%).
-- The eligible robot with the highest battery is selected.
-- Equal battery values are resolved by robot ID for deterministic behaviour.
-- If no robot is eligible, tasks remain pending and are reconsidered when a robot reports status.
+When Nav2 mode is enabled, `destination` is a JSON-encoded string such as:
 
-## Current limitations
+```json
+{"x":2.0,"y":1.0,"yaw":0.0,"frame_id":"map"}
+```
 
-The robot agent currently acknowledges assignment receipt only. It does not send `executing`, `succeeded`, or `failed` based on navigation, because no navigation executor exists yet. Those states are supported by the fleet protocol/store for the future Nav2 integration. Heartbeat freshness uses the ROS node clock. The task store and registry are in-memory and are lost when the process restarts. This prototype is not safety-rated.
+The agent sends a `nav2_msgs/action/NavigateToPose` goal using a `geometry_msgs/msg/PoseStamped`. The action name defaults to relative `navigate_to_pose`, which resolves within the robot's ROS namespace (for example `/robot_1/navigate_to_pose`).
+
+## Operational boundaries
+
+Nav2, localization, mapping, TF, robot controllers, simulation and traffic deconfliction are not launched/configured by this repository. The prototype is not safety-rated. ROS 2 Humble build, action integration, Gazebo simulation and physical robot tests remain required.

@@ -157,6 +157,12 @@ class FleetManagerNode(Node):
                     task_id, TaskState.REJECTED, robot_id,
                     str(payload.get("reason", "robot_rejected")),
                 )
+                robot = self.registry.get(robot_id)
+                if robot is not None and robot.current_task_id == task_id:
+                    robot.status = RobotStatus.AVAILABLE
+                    robot.current_task_id = ""
+                    self.registry.update(robot)
+                self.dispatch_pending_tasks()
             else:
                 raise ValueError(f"unsupported acknowledgement state: {state}")
             self.get_logger().info(f"Task {task_id} acknowledgement: {state}")

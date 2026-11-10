@@ -159,7 +159,6 @@ class RobotAgentNode(Node):
         pose.pose.orientation.w = goal_data["qw"]
         goal.pose = pose
 
-        self.publish_task_status("executing")
         send_future = self.nav_client.send_goal_async(
             goal, feedback_callback=self._navigation_feedback
         )
@@ -175,6 +174,7 @@ class RobotAgentNode(Node):
             self._finish_task("failed", "nav2_goal_rejected")
             return
         self.active_goal_handle = goal_handle
+        self.publish_task_status("executing")
         result_future = goal_handle.get_result_async()
         result_future.add_done_callback(self._navigation_result_callback)
 

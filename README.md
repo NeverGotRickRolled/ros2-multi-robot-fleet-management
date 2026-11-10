@@ -74,8 +74,10 @@ PYTHONPATH=. pytest -q test
 - [x] Deterministic battery-aware task allocator
 - [x] ROS 2 fleet-manager node scaffold using JSON topic payloads
 - [x] Unit tests for allocation logic
+- [x] Robot-side telemetry and assignment agent scaffold
+- [x] Robot agent JSON protocol unit tests
 - [ ] ROS 2 build and runtime verification
-- [ ] Robot-side agents and namespaced simulation
+- [ ] Robot-side namespaced simulation and runtime integration
 - [ ] Navigation action dispatch and task lifecycle
 - [ ] Multi-robot conflict handling and observability
 

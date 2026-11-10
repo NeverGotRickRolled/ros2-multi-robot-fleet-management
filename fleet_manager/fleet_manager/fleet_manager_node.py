@@ -74,6 +74,18 @@ class FleetManagerNode(Node):
                 battery_percent=float(payload["battery_percent"]),
                 current_task_id=str(payload.get("current_task_id", "")),
             )
+            existing = self.registry.get(state.robot_id)
+            # A queued pre-assignment AVAILABLE heartbeat must not undo a
+            # reservation made by the fleet manager.
+            if (
+                existing is not None
+                and existing.status == RobotStatus.BUSY
+                and existing.current_task_id
+                and state.status == RobotStatus.AVAILABLE
+                and not state.current_task_id
+            ):
+                state.status = RobotStatus.BUSY
+                state.current_task_id = existing.current_task_id
             self.registry.update(state)
             self.last_seen[state.robot_id] = self._now_seconds()
             self.dispatch_pending_tasks()

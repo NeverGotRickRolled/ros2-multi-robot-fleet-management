@@ -8,10 +8,11 @@
 - [x] Pure Python unit tests
 
 ## Milestone 2 — Robot agents
-- [ ] Namespaced robot status publishers
-- [ ] Assignment subscribers
-- [ ] Task acknowledgement and completion state
-- [ ] Heartbeat and stale-robot detection
+- [x] Robot status heartbeat publisher
+- [x] Assignment subscriber with robot ID filtering
+- [x] Assignment receipt acknowledgement publisher
+- [ ] Fleet manager acknowledgement consumer and completion state
+- [ ] Heartbeat timeout and stale-robot detection
 
 ## Milestone 3 — Navigation
 - [ ] Nav2 action client integration

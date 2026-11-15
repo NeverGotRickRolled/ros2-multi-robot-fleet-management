@@ -35,7 +35,7 @@ A fleet manager should be able to monitor multiple robots, select a suitable rob
                                   (optional)         (optional)
 ```
 
-See [system architecture](docs/ARCHITECTURE.md) and [robot agent / Nav2 integration](docs/ROBOT_AGENT.md) for details.
+See [system architecture](docs/ARCHITECTURE.md), [robot agent / Nav2 integration](docs/ROBOT_AGENT.md), [development roadmap](docs/ROADMAP.md), and [interview walkthrough](docs/INTERVIEW_GUIDE.md) for details.
 
 ## Implemented capabilities
 
